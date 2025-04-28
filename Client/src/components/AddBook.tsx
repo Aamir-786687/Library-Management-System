@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 interface BookFormData {
   title: string;
