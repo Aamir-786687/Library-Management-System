@@ -1,1 +1,45 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-scroll {
+  display: flex;
+  animation: scroll 30s linear infinite;
+  min-width: max-content;
+}
+
+.animate-scroll-reverse {
+  display: flex;
+  animation: scroll-reverse 30s linear infinite;
+  min-width: max-content;
+}
+
+/* Pause animation on hover */
+.animate-scroll:hover,
+.animate-scroll-reverse:hover {
+  animation-play-state: paused;
+}
+
+/* Container styles */
+.overflow-hidden {
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}

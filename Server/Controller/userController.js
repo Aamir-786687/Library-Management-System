@@ -1,85 +1,45 @@
-import UserModel from "../Model/userSchema.js";
-import BookModel from "../Model/bookSchema.js";
+import User from '../Model/User.js';
 
-const createUser = async (req, res) => {
+// Create new user
+export const createUser = async (req, res) => {
     try {
-        const newUser = new UserModel(req.body);
-        await newUser.save();
-        res.status(201).json({ message: "User created successfully", user: newUser });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+        const { username, email, ...otherDetails } = req.body;
+
+        // Check if user already exists
+        const existingUser = await User.findOne({
+            $or: [
+                { username: username },
+                { email: email }
+            ]
+        });
+
+        if (existingUser) {
+            return res.status(400).json({ 
+                message: "Username or email already exists" 
+            });
+        }
+
+        // Create new user
+        const newUser = new User({
+            username,
+            email,
+            ...otherDetails
+        });
+
+        const savedUser = await newUser.save();
+        res.status(201).json(savedUser);
+    } catch (err) {
+        res.status(500).json({ 
+            message: "Error creating user", 
+            error: err.message 
+        });
     }
 };
 
-const borrowBook = async (req, res) => {
-    const { id } = req.params;
-    const { bookId } = req.body;
+// Get all users
+export const getUsers = async (req, res) => {
     try {
-        const user = await UserModel.findById(id);
-        const book = await BookModel.findById(bookId);
-
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-        if (!book) {
-            return res.status(404).json({ error: "Book not found" });
-        }
-        if (!book.isAvailable) {
-            return res.status(400).json({ error: "Book is currently unavailable" });
-        }
-        console.log("User borrowedBooks before push:", user.borrowedBooks);
-
-        if (!user.borrowedBooks) {
-            user.borrowedBooks = [];
-        }
-
-        user.borrowedBooks.push(bookId);
-        book.isAvailable = false;
-
-        await user.save();
-        await book.save();
-
-        res.status(200).json({ message: "Book borrowed successfully", user, book });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const returnBook = async (req, res) => {
-    const { id } = req.params;
-    const { bookId } = req.body;
-
-    try {
-        const user = await UserModel.findById(id);
-        const book = await BookModel.findById(bookId);
-
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
-        if (!book) {
-            return res.status(404).json({ error: "Book not found" });
-        }
-
-        if (!user.borrowedBooks.includes(bookId)) {
-            return res.status(400).json({ error: "User did not borrow this book" });
-        }
-
-        user.borrowedBooks = user.borrowedBooks.filter(borrowedBookId => borrowedBookId !== bookId);
-        book.isAvailable = true;
-
-        await user.save();
-        await book.save();
-
-        res.status(200).json({ message: "Book returned successfully", user, book });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-const getUsers = async (req, res) => {
-    try {
-        const users = await UserModel.find();
+        const users = await User.find();
         res.status(200).json({ users });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -88,12 +48,74 @@ const getUsers = async (req, res) => {
 
 const editUser = async (req, res) => {
     try {
-        const data = await UserModel.findByIdAndUpdate(req.params.id, req.body, { new: true })
-        res.status(200).json({ data })
-    } catch (error) {
-        res.status(500).json({ error: error.message })
+        const updatedUser = await User.findByIdAndUpdate(
+            req.params.id,
+            { $set: req.body },
+            { new: true }
+        );
+        res.status(200).json(updatedUser);
+    } catch (err) {
+        res.status(500).json({ 
+            message: "Error updating user", 
+            error: err.message 
+        });
     }
-}
+};
 
+// Login user
+export const loginUser = async (req, res) => {
+    try {
+        const { username, email } = req.body;
 
-export { createUser, getUsers, borrowBook, returnBook, editUser };
+        // Check if user exists with either username or email
+        const user = await User.findOne({ 
+            $or: [
+                { username: username },
+                { email: email }
+            ]
+        });
+
+        if (!user) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        // Send user data without sensitive information
+        const { ...userData } = user._doc;
+        res.status(200).json(userData);
+    } catch (err) {
+        res.status(500).json({ message: "Error during login", error: err.message });
+    }
+};
+
+// Get user by ID
+export const getUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const { ...userData } = user._doc;
+        res.status(200).json(userData);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching user", error: err.message });
+    }
+};
+
+// Update user
+export const updateUser = async (req, res) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            req.params.id,
+            { $set: req.body },
+            { new: true }
+        );
+        res.status(200).json(updatedUser);
+    } catch (err) {
+        res.status(500).json({ 
+            message: "Error updating user", 
+            error: err.message 
+        });
+    }
+};
+
+export { editUser };

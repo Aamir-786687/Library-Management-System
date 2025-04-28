@@ -3,11 +3,10 @@ import { AddBook, dltBook, editBook, getBook } from "../Controller/bookControlle
 
 const bookRouter = express.Router()
 
+// CRUD operations
+bookRouter.get("/books", getBook);
 bookRouter.post("/books", AddBook);
-bookRouter.get("/books", getBook)
-bookRouter.put("/books/:id", editBook)
-bookRouter.patch("/books/:id", editBook)
-bookRouter.delete("/books/:id", dltBook)
+bookRouter.put("/books/:id", editBook);
+bookRouter.delete("/books/:id", dltBook);
 
-
-export default bookRouter
+export default bookRouter;

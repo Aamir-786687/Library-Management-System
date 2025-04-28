@@ -1,23 +1,27 @@
-import express from "express"
-import dotenv from "dotenv"
-import cors from "cors"
-import connectdb from "./Server/db.js";
-import bookRouter from "./Routes/bookRouter.js";
-import userRouter from "./Routes/userRouter.js";
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import userRoutes from './Routes/userRoutes.js';
+import bookRouter from './Routes/bookRouter.js';
+import connectdb from './Server/db.js';
+// Load environment variables
 dotenv.config();
 
-connectdb()
+connectdb();
 
 const app = express();
-app.use(express.json());
+
+// Middleware
 app.use(cors());
+app.use(express.json());
 
-app.use("/", bookRouter)
-app.use("/",userRouter)
+// Routes
+app.use('/users', userRoutes);
+app.use('/books', bookRouter);
 
-let port = process.env.PORT
 
-app.listen(port, ()=>{
-    console.log(`Server Started on http://localhost:${port}`);  
-})
- 
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
