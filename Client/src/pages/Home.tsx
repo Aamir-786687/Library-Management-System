@@ -1,7 +1,7 @@
 import React from 'react';
 import About from '../components/About';
 import Footer from '../components/Footer';
-import BgImage from '../components/bgImage';  
+import BgImage from '../components/BgImage';
 import News from '../components/News';
 // import PhotoGallery from '../components/PhotoGallery';
 import PopularBooks from '../components/PopularBooks';
